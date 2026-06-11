@@ -1,45 +1,35 @@
 workflows:
-  ryde-ble-unlock:
-    name: Ryde BLE Unlock IPA
+  ryde-unlock:
+    name: Ryde BLE Unlock
     instance_type: mac_mini_m2
     max_build_duration: 60
     triggering:
       push:
         branch: main
     scripts:
-      - name: Setup & Build
+      - name: Build
         script: |
           mkdir -p RydeUnlock/RydeUnlock
-          mv ContentView.swift RydeUnlock/RydeUnlock/ 2>/dev/null || true
-          mv RydeUnlockApp.swift RydeUnlock/RydeUnlock/ 2>/dev/null || true
+          mv *.swift RydeUnlock/RydeUnlock/ 2>/dev/null || true
           mv Info.plist RydeUnlock/ 2>/dev/null || true
           
           cd RydeUnlock
           
-          cat > project.yml << 'EOT'
-name: RydeUnlock
-options:
-  bundleIdPrefix: com.rydeunlock
-  deploymentTarget:
-    iOS: 15.0
-targets:
-  RydeUnlock:
-    type: application
-    platform: iOS
-    sources:
-      - path: .
-    settings:
-      INFOPLIST_FILE: Info.plist
-    entitlements:
-      com.apple.developer.bluetooth-central: true
-EOT
+          echo '{
+            "name": "RydeUnlock",
+            "targets": {
+              "RydeUnlock": {
+                "type": "application",
+                "platform": "iOS",
+                "sources": [ "." ],
+                "settings": {
+                  "INFOPLIST_FILE": "Info.plist"
+                }
+              }
+            }
+          }' > project.json
           
-          brew install xcodegen || true
-          xcodegen generate
-          
-          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos -configuration Release archive -archivePath ../build/RydeUnlock.xcarchive CODE_SIGNING_ALLOWED=NO || echo "Build failed"
-          
-          mkdir -p ../build/output
+          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos CODE_SIGNING_ALLOWED=NO || echo "xcodebuild failed"
     artifacts:
-      - build/output/*.ipa
       - '**/*.ipa'
+      - build/*.ipa
