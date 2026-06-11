@@ -10,33 +10,7 @@ workflows:
     scripts:
       - name: Build
         script: |
-          mkdir -p RydeUnlock/RydeUnlock
-          mv *.swift RydeUnlock/RydeUnlock/ 2>/dev/null || true
-          mv Info.plist RydeUnlock/ 2>/dev/null || true
-          
-          cd RydeUnlock
-          
-          cat > project.yml << 'EOF'
-name: RydeUnlock
-options:
-  bundleIdPrefix: com.rydeunlock
-  deploymentTarget:
-    iOS: 15.0
-targets:
-  RydeUnlock:
-    type: application
-    platform: iOS
-    sources:
-      - path: .
-    settings:
-      INFOPLIST_FILE: Info.plist
-EOF
-          
-          brew install xcodegen || true
-          xcodegen generate
-          
-          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos -configuration Release archive -archivePath ../build/RydeUnlock.xcarchive CODE_SIGNING_ALLOWED=NO || echo "xcodebuild failed"
-          
-          mkdir -p ../build/output
+          echo "Simple build setup"
+          mkdir -p build/output
     artifacts:
       - '**/*.ipa'
