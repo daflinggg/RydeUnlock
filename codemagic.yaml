@@ -5,7 +5,8 @@ workflows:
     max_build_duration: 60
     triggering:
       push:
-        branch: main
+        branches:
+          - main
     scripts:
       - name: Build
         script: |
@@ -15,21 +16,27 @@ workflows:
           
           cd RydeUnlock
           
-          echo '{
-            "name": "RydeUnlock",
-            "targets": {
-              "RydeUnlock": {
-                "type": "application",
-                "platform": "iOS",
-                "sources": [ "." ],
-                "settings": {
-                  "INFOPLIST_FILE": "Info.plist"
-                }
-              }
-            }
-          }' > project.json
+          cat > project.yml << 'EOF'
+name: RydeUnlock
+options:
+  bundleIdPrefix: com.rydeunlock
+  deploymentTarget:
+    iOS: 15.0
+targets:
+  RydeUnlock:
+    type: application
+    platform: iOS
+    sources:
+      - path: .
+    settings:
+      INFOPLIST_FILE: Info.plist
+EOF
           
-          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos CODE_SIGNING_ALLOWED=NO || echo "xcodebuild failed"
+          brew install xcodegen || true
+          xcodegen generate
+          
+          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos -configuration Release archive -archivePath ../build/RydeUnlock.xcarchive CODE_SIGNING_ALLOWED=NO || echo "xcodebuild failed"
+          
+          mkdir -p ../build/output
     artifacts:
       - '**/*.ipa'
-      - build/*.ipa
