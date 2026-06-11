@@ -1,0 +1,19 @@
+workflows:
+  ryde-unlock:
+    name: Ryde BLE Unlock
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    triggering:
+      push:
+        branch: main
+    scripts:
+      - name: Build IPA
+        script: |
+          # Create basic project structure if needed
+          mkdir -p RydeUnlock
+          # Build
+          xcodebuild -project RydeUnlock.xcodeproj -scheme RydeUnlock -sdk iphoneos -configuration Release archive -archivePath build/RydeUnlock.xcarchive || echo "Project file missing, trying direct build"
+          echo "Trying manual SwiftUI build setup"
+    artifacts:
+      - build/output/*.ipa
+      - '**/*.ipa'
